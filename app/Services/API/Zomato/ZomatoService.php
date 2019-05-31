@@ -10,6 +10,8 @@ use App\Http\Requests\Zomato\Common\CollectionRequest;
 use App\Http\Requests\Zomato\Common\CuisinesRequest;
 use App\Http\Requests\Zomato\Common\EstablishmentsRequest;
 use App\Http\Requests\Zomato\Common\GeocodeRequest;
+use App\Http\Requests\Zomato\Location\LocationDetailRequest;
+use App\Http\Requests\Zomato\Location\LocationRequest;
 use GuzzleHttp\Exception\TransferException;
 
 class ZomatoService
@@ -124,7 +126,7 @@ class ZomatoService
 
     /**
      * Get a list of all cuisines of restaurants listed in a city. The location/city input can be provided in the
-       following ways :
+     * following ways :
 
      * 1. Using Zomato City ID
      * 2. Using coordinates of any location within a city
@@ -226,4 +228,65 @@ class ZomatoService
 
     }
 
+    /**
+     * Search for Zomato locations by keyword. Provide coordinates to get better search results
+     *
+     * @param LocationRequest $locationRequest
+     * @return array
+     */
+    public function locations(LocationRequest $locationRequest)
+    {
+        try {
+            $response = $this->zomatoClient->request("locations", [
+                'query' => $locationRequest->get('query'),
+                'lat' => $locationRequest->get('lat'),
+                'lon' => $locationRequest->get('lon'),
+                'count' => $locationRequest->get('count')
+            ]);
+
+            return [
+                'code' => $response['code'],
+                'data' => $response['data']
+            ];
+
+
+        } catch (TransferException $e) {
+            $data = json_decode($e->getResponse()->getBody()->getContents());
+            return [
+                'code' => $e->getResponse()->getStatusCode(),
+                'data' => $data
+            ];
+        }
+
+    }
+
+    /**
+     * Get Foodie Index, Nightlife Index, Top Cuisines and Best rated restaurants in a given location
+     *
+     * @param LocationDetailRequest $locationDetailRequest
+     * @return array
+     */
+    public function locationDetails(LocationDetailRequest $locationDetailRequest)
+    {
+        try {
+            $response = $this->zomatoClient->request("location_details", [
+                'entity_id' => $locationDetailRequest->get('entity_id'),
+                'entity_type' => $locationDetailRequest->get('entity_type')
+            ]);
+
+            return [
+                'code' => $response['code'],
+                'data' => $response['data']
+            ];
+
+
+        } catch (TransferException $e) {
+            $data = json_decode($e->getResponse()->getBody()->getContents());
+            return [
+                'code' => $e->getResponse()->getStatusCode(),
+                'data' => $data
+            ];
+        }
+
+    }
 }

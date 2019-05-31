@@ -19,5 +19,7 @@ Route::group(['prefix'=>'v1','namespace'=>'API'], function () {
     Route::post('/zomato/cuisines', 'ZomatoController@getCuisines');
     Route::post('/zomato/establishments', 'ZomatoController@getEstablishments');
     Route::post('/zomato/geocode', 'ZomatoController@getGeoCode');
+    Route::post('/zomato/locations', 'ZomatoController@getLocations');
+    Route::post('/zomato/location-details', 'ZomatoController@getLocationDetails');
 });
 

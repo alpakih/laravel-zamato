@@ -10,6 +10,8 @@ use App\Http\Requests\Zomato\Common\CollectionRequest;
 use App\Http\Requests\Zomato\Common\CuisinesRequest;
 use App\Http\Requests\Zomato\Common\EstablishmentsRequest;
 use App\Http\Requests\Zomato\Common\GeocodeRequest;
+use App\Http\Requests\Zomato\Location\LocationDetailRequest;
+use App\Http\Requests\Zomato\Location\LocationRequest;
 use App\Library\ApiBaseResponse;
 use App\Services\API\Zomato\ZomatoService;
 use Illuminate\Http\Response;
@@ -127,6 +129,43 @@ class ZomatoController extends Controller
             } else {
                 $response = $this->apiBaseResponse->badRequest("Data not found");
 
+            }
+            return response($response);
+
+        } catch (Exception $e) {
+            $response = $this->apiBaseResponse->errorResponse($e);
+            return response($response, Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function getLocations(LocationRequest $locationRequest)
+    {
+        try {
+            $result = $this->zomatoService->locations($locationRequest);
+
+            if ($result['code'] == 200) {
+                $response = $this->apiBaseResponse->singleData($result['data'], []);
+            } else {
+                $response = $this->apiBaseResponse->status(403, $result['data']->message, $result['data']);
+            }
+            return response($response);
+
+        } catch (Exception $e) {
+            $response = $this->apiBaseResponse->errorResponse($e);
+            return response($response, Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    public function getLocationDetails(LocationDetailRequest $locationDetailRequest)
+    {
+        try {
+            $result = $this->zomatoService->locationDetails($locationDetailRequest);
+
+            if ($result['code'] == 200) {
+                $response = $this->apiBaseResponse->singleData($result['data'], []);
+            } else {
+                $response = $this->apiBaseResponse->status(403, $result['data']->message, $result['data']);
             }
             return response($response);
 

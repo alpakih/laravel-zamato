@@ -10,6 +10,10 @@ use App\Http\Requests\Zomato\Common\CollectionRequest;
 use App\Http\Requests\Zomato\Common\CuisinesRequest;
 use App\Http\Requests\Zomato\Common\EstablishmentsRequest;
 use App\Http\Requests\Zomato\Common\GeocodeRequest;
+use App\Http\Requests\Zomato\Restaurant\DaillyMenuRequest;
+use App\Http\Requests\Zomato\Restaurant\RestaurantRequest;
+use App\Http\Requests\Zomato\Restaurant\ReviewRequest;
+use App\Http\Requests\Zomato\Restaurant\SearchRequest;
 use App\Http\Requests\Zomato\Location\LocationDetailRequest;
 use App\Http\Requests\Zomato\Location\LocationRequest;
 use App\Library\ApiBaseResponse;
@@ -166,6 +170,78 @@ class ZomatoController extends Controller
                 $response = $this->apiBaseResponse->singleData($result['data'], []);
             } else {
                 $response = $this->apiBaseResponse->status(403, $result['data']->message, $result['data']);
+            }
+            return response($response);
+
+        } catch (Exception $e) {
+            $response = $this->apiBaseResponse->errorResponse($e);
+            return response($response, Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function getDailyMenu(DaillyMenuRequest $daillyMenuRequest)
+    {
+        try {
+            $result = $this->zomatoService->dailyMenu($daillyMenuRequest);
+
+            if ($result['code'] == 200) {
+                $response = $this->apiBaseResponse->singleData($result['data'], []);
+            } else {
+                $response = $this->apiBaseResponse->badRequest($result['data']->message);
+            }
+            return response($response);
+
+        } catch (Exception $e) {
+            $response = $this->apiBaseResponse->errorResponse($e);
+            return response($response, Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function getRestaurant(RestaurantRequest $restaurantRequest)
+    {
+        try {
+            $result = $this->zomatoService->restaurant($restaurantRequest);
+
+            if ($result['code'] == 200) {
+                $response = $this->apiBaseResponse->singleData($result['data'], []);
+            } else {
+                $response = $this->apiBaseResponse->badRequest($result['data']->message);
+            }
+            return response($response);
+
+        } catch (Exception $e) {
+            $response = $this->apiBaseResponse->errorResponse($e);
+            return response($response, Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function getReviews(ReviewRequest $reviewRequest)
+    {
+        try {
+            $result = $this->zomatoService->reviews($reviewRequest);
+
+            if ($result['code'] == 200) {
+                $response = $this->apiBaseResponse->singleData($result['data'], []);
+            } else {
+                $response = $this->apiBaseResponse->badRequest($result['data']->message);
+            }
+            return response($response);
+
+        } catch (Exception $e) {
+            $response = $this->apiBaseResponse->errorResponse($e);
+            return response($response, Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function search(SearchRequest $searchRequest)
+    {
+        try {
+            $result = $this->zomatoService->search($searchRequest);
+
+            if ($result['code'] == 200) {
+                $response = $this->apiBaseResponse->singleData($result['data'], []);
+            } else {
+                $response = $this->apiBaseResponse->badRequest($result['data']->message);
             }
             return response($response);
 

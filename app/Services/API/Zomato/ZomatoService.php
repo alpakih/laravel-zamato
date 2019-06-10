@@ -10,6 +10,10 @@ use App\Http\Requests\Zomato\Common\CollectionRequest;
 use App\Http\Requests\Zomato\Common\CuisinesRequest;
 use App\Http\Requests\Zomato\Common\EstablishmentsRequest;
 use App\Http\Requests\Zomato\Common\GeocodeRequest;
+use App\Http\Requests\Zomato\Restaurant\DaillyMenuRequest;
+use App\Http\Requests\Zomato\Restaurant\RestaurantRequest;
+use App\Http\Requests\Zomato\Restaurant\ReviewRequest;
+use App\Http\Requests\Zomato\Restaurant\SearchRequest;
 use App\Http\Requests\Zomato\Location\LocationDetailRequest;
 use App\Http\Requests\Zomato\Location\LocationRequest;
 use GuzzleHttp\Exception\TransferException;
@@ -88,7 +92,6 @@ class ZomatoService
 
     /**
      * Returns Zomato Restaurant Collections in a City. The location/City input can be provided in the following ways :
-
      * 1. Using Zomato City ID
      * 2. Using coordinates of any location within a city
      *
@@ -127,7 +130,6 @@ class ZomatoService
     /**
      * Get a list of all cuisines of restaurants listed in a city. The location/city input can be provided in the
      * following ways :
-
      * 1. Using Zomato City ID
      * 2. Using coordinates of any location within a city
      *
@@ -162,7 +164,6 @@ class ZomatoService
 
     /**
      * Get a list of restaurant types in a city. The location/City input can be provided in the following ways:
-
      * 1. Using Zomato City ID
      * 2. Using coordinates of any location within a city
      *
@@ -273,6 +274,147 @@ class ZomatoService
                 'entity_id' => $locationDetailRequest->get('entity_id'),
                 'entity_type' => $locationDetailRequest->get('entity_type')
             ]);
+
+            return [
+                'code' => $response['code'],
+                'data' => $response['data']
+            ];
+
+
+        } catch (TransferException $e) {
+            $data = json_decode($e->getResponse()->getBody()->getContents());
+            return [
+                'code' => $e->getResponse()->getStatusCode(),
+                'data' => $data
+            ];
+        }
+
+    }
+
+    /**
+     * Get daily menu using Zomato restaurant ID.
+     *
+     * @param DaillyMenuRequest $daillyMenuRequest
+     * @return array
+     */
+    public function dailyMenu(DaillyMenuRequest $daillyMenuRequest)
+    {
+        try {
+            $response = $this->zomatoClient->request("daily_menu", [
+                'res_id' => $daillyMenuRequest->get('res_id')
+            ]);
+
+            return [
+                'code' => $response['code'],
+                'data' => $response['data']
+            ];
+
+
+        } catch (TransferException $e) {
+            $data = json_decode($e->getResponse()->getBody()->getContents());
+            return [
+                'code' => $e->getResponse()->getStatusCode(),
+                'data' => $data
+            ];
+        }
+
+    }
+
+    /**
+     * Get detailed restaurant information using Zomato restaurant ID. Partner Access is required to access
+     * photos and reviews.
+     *
+     * @param RestaurantRequest $restaurantRequest
+     * @return array
+     */
+    public function restaurant(RestaurantRequest $restaurantRequest)
+    {
+        try {
+            $response = $this->zomatoClient->request("restaurant", [
+                'res_id' => $restaurantRequest->get('res_id')
+            ]);
+
+            return [
+                'code' => $response['code'],
+                'data' => $response['data']
+            ];
+
+
+        } catch (TransferException $e) {
+            $data = json_decode($e->getResponse()->getBody()->getContents());
+            return [
+                'code' => $e->getResponse()->getStatusCode(),
+                'data' => $data
+            ];
+        }
+
+    }
+
+    /**
+     * Get restaurant reviews using the Zomato restaurant ID. Only 5 latest reviews are available under
+     * the Basic API plan.
+     *
+     * @param ReviewRequest $reviewRequest
+     * @return array
+     */
+    public function reviews(ReviewRequest $reviewRequest)
+    {
+        try {
+            $response = $this->zomatoClient->request("reviews", [
+                'res_id' => $reviewRequest->get('res_id'),
+                'start' => $reviewRequest->get('start'),
+                'count' => $reviewRequest->get('count')
+            ]);
+
+            return [
+                'code' => $response['code'],
+                'data' => $response['data']
+            ];
+
+
+        } catch (TransferException $e) {
+            $data = json_decode($e->getResponse()->getBody()->getContents());
+            return [
+                'code' => $e->getResponse()->getStatusCode(),
+                'data' => $data
+            ];
+        }
+
+    }
+
+    /**
+     * The location input can be specified using Zomato location ID or coordinates. Cuisine / Establishment /
+     * Collection IDs can be obtained from respective api calls. Get up to 100 restaurants by changing the 'start' and
+     * 'count' parameters with the maximum value of count being 20. Partner Access is required to access photos and reviews.
+     *
+     * Examples:
+
+     * To search for 'Italian' restaurants in 'Manhattan, New York City', set cuisines = 55, entity_id = 94741 and entity_type = zone
+     * To search for 'cafes' in 'Manhattan, New York City', set establishment_type = 1, entity_type = zone and entity_id = 94741
+     * Get list of all restaurants in 'Trending this Week' collection in 'New York City' by using entity_id = 280, entity_type = city and collection_id = 1
+     *
+     * @param SearchRequest $searchRequest
+     * @return array
+     */
+    public function search(SearchRequest $searchRequest)
+    {
+        try {
+            $response = $this->zomatoClient->request("search", [
+                'entity_id' => $searchRequest->get('entity_id'),
+                'entity_type' => $searchRequest->get('entity_type'),
+                'q' => $searchRequest->get('q'),
+                'start' => $searchRequest->get('start'),
+                'count' => $searchRequest->get('count'),
+                'lat' => $searchRequest->get('lat'),
+                'lon' => $searchRequest->get('lon'),
+                'radius' => $searchRequest->get('radius'),
+                'cuisines' => $searchRequest->get('cuisines'),
+                'establishment_type' => $searchRequest->get('establishment_type'),
+                'collection_id' => $searchRequest->get('collection_id'),
+                'category' => $searchRequest->get('category'),
+                'sort' => $searchRequest->get('sort'),
+                'order' => $searchRequest->get('order')]);
+
 
             return [
                 'code' => $response['code'],
